@@ -20,10 +20,10 @@ def maxcut_obj(x, G):
     w = nx.get_edge_attributes(G, "weight")
     n = len(G.nodes())
     for edge in G.edges():
-        start = edge[0]
-        end = edge[1]
+        start = int(x[edge[0]])
+        end = int(x[edge[1]])
         weight = w[edge]
-        obj -= weight * int(x[start]) * (1 - int(x[end]))
+        obj -= weight * (start*(1 - end) + end*(1 - start))
     return obj
 
 def compute_expectation(counts, G):
@@ -85,7 +85,7 @@ def create_qaoa_circ(G, theta):
     return qc
 
 # now we write a function that executes the circuit on the chosen backend
-def get_expectation(G, p, shots=512):
+def get_expectation(G, p, shots):
     """
     Runs parametrized circuit
     Args:
@@ -98,8 +98,7 @@ def get_expectation(G, p, shots=512):
 
     def execute_circ(theta, return_counts=False):
         qc = create_qaoa_circ(G, theta)
-        counts = backend.run(qc, seed_simulator=10,
-                             nshots=shots).result().get_counts()
+        counts = backend.run(qc, seed_simulator=10, nshots=shots).result().get_counts()
         if return_counts:
             return compute_expectation(counts, G), counts
         else:
