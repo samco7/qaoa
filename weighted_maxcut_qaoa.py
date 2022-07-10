@@ -98,7 +98,8 @@ def get_expectation(G, p, shots):
 
     def execute_circ(theta, return_counts=False):
         qc = create_qaoa_circ(G, theta)
-        counts = backend.run(qc, seed_simulator=10, nshots=shots).result().get_counts()
+        qobj = transpile(qc, backend=backend)
+        counts = backend.run(qobj, nshots=shots).result().get_counts()
         if return_counts:
             return compute_expectation(counts, G), counts
         else:
