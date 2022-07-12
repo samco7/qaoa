@@ -79,7 +79,7 @@ class maxcut:
         qc.measure_all()
         return qc
 
-    # now we write a function that executes the circuit on the chosen backend
+    # now we write a function to execute the circuit on the chosen backend
     def get_expectation(self):
         backend = Aer.get_backend('qasm_simulator')
         backend.shots = self.shots
