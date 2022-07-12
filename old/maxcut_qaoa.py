@@ -68,8 +68,8 @@ def create_qaoa_circ(G, theta):
 
     for irep in range(0, p):
         # problem unitary
-        for pair in list(G.edges()):
-            qc.rzz(2 * gamma[irep], pair[0], pair[1])
+        for pair in set(G.edges()):
+            qc.rzz(gamma[irep], pair[0], pair[1])
         # mixer unitary
         for i in range(0, nqubits):
             qc.rx(2 * beta[irep], i)
@@ -78,7 +78,7 @@ def create_qaoa_circ(G, theta):
     return qc
 
 # now we write a function that executes the circuit on the chosen backend
-def get_expectation(G, p, shots=4*512):
+def get_expectation(G, p, shots=1024):
     """
     Runs parametrized circuit
     Args:
@@ -92,7 +92,7 @@ def get_expectation(G, p, shots=4*512):
     def execute_circ(theta, return_counts=False):
         qc = create_qaoa_circ(G, theta)
         counts = backend.run(qc, seed_simulator=10,
-                             nshots=512).result().get_counts()
+                             nshots=shots).result().get_counts()
         if return_counts:
             return compute_expectation(counts, G), counts
         else:
