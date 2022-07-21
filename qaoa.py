@@ -106,13 +106,15 @@ class maxcut:
     # now we write a function to execute the circuit on the chosen backend
     def get_expectation(self):
         backend = Aer.get_backend('qasm_simulator')
+        backend_opts = {'method':"matrix_product_state" , 'mps_sample_measure_qubits_opt':12}
         # backend = AerSimulator(
         #     method="statevector",
         #     device="GPU")
 
         def execute_circ(theta, return_result=False):
             qc = self.create_qaoa_circ(theta)
-            result = backend.run(qc, seed_simulator=10, shots=self.shots).result()
+            result = backend.run(qc, seed_simulator=10, shots=self.shots, backend_options=backend_opts).result()
+            # result = execute(qc, backend, shots=self.shots, backend_options=backend_opts).result()
             self.total_time += result.time_taken #increment our count of total estimated computation time each time the circuit is executed
             counts = result.get_counts()
             if return_result:
@@ -231,10 +233,10 @@ class maxcut:
                 true_bitstring[point] = '1'
             true_bitstring = ''.join(true_bitstring)
 
-            # save parameters if our result is decent
+            # save parameters if our result is somewhat decent
             true_min = self.maxcut_obj(true_bitstring)
             approx_ratio = np.abs(found_min/true_min)
-            if approx_ratio >= .6:
+            if approx_ratio >= .55:
                 np.save(file_path, sol)
 
             #save results in dictionary to returns
