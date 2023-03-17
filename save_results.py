@@ -67,7 +67,7 @@ def save_plot(experiment_name):
             continue
         break
 
-    # save the results as a .pickle file
+    # save the plot (as a png, with double resolution)
     plt.savefig(day_path + check + '.png', facecolor='white', bbox_inches='tight', dpi=200)
 
 
