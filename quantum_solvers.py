@@ -11,8 +11,10 @@ import cvxpy as cp
 class QAOAResult:
     def __init__(self):
         self.bitstring = None
+        self.relaxed_bitstring = None
         self.obj = None
         self.relaxed_obj = None
+        self.bmz_angles = None
         self.counts = None
         self.expectation = None
         self.unique_samples = None
@@ -210,8 +212,10 @@ class QAOASolver:
 
         res = QAOAResult()
         res.bitstring = return_string
+        res.relaxed_bitstring = self.__relaxed_bits
         res.obj = best_val
         res.relaxed_obj = self.__relaxed_obj
+        res.bmz_angles = self.__bmz_angles
         res.counts = counts
         res.expectation = self.__compute_expectation(counts)
         res.unique_samples = len(counts)
