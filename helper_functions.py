@@ -18,7 +18,7 @@ def objective(graph, x):
         return x_arr@sigma@x_arr
 
 
-def perturb_relaxed(perturbation_ratio, graph, relaxed_solution, ):
+def perturb_relaxed(perturbation_ratio, graph, relaxed_solution):
     if len(relaxed_solution) > 2:
         relaxed_bits, relaxed_obj, bmz_angles = relaxed_solution
     else:
