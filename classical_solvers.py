@@ -24,8 +24,8 @@ def BMZ(graph):
     def df(theta):
         return (W*np.sin(T(theta))).T@np.ones(N)
 
-    # def d2f(theta):
-    #     return W*np.cos(T(theta)) - np.diag((W*np.cos(T(theta)))@np.ones(N))
+    def d2f(theta):
+        return W*np.cos(T(theta)) - np.diag((W*np.cos(T(theta)))@np.ones(N))
 
     def generate_cut(theta, alpha):
         theta = np.mod(theta - alpha, 2*np.pi)
@@ -43,7 +43,7 @@ def BMZ(graph):
         return obj/4
 
     init_theta = np.random.uniform(0, 2*np.pi, N)
-    theta = minimize(f, init_theta, method='L-BFGS-B', jac=df).x
+    theta = minimize(f, init_theta, method='Newton-CG', jac=df, hess=d2f).x
     theta = np.mod(theta, 2*np.pi)
     theta_sorted = np.sort(theta)
     alpha = 0
