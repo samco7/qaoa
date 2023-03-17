@@ -40,12 +40,11 @@ def save_result(res, experiment_name):
         pickle.dump(res, f)
 
 
-def save_plot(fig, experiment_name):
+def save_plot(experiment_name):
     """
         Saves the results of an experiment as a pickle file.
 
         Parameters:
-            res (any): result to be saved
             experiment_name (str): type of experiment the results correspond to (e.g. clustering
                 or density).
     """
