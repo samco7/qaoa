@@ -168,3 +168,4 @@ def plot_clusters(bitstring_1, bitstring_2, nodes_points, title_1, title_2):
     ax[2].scatter(true_cluster1[0, :], true_cluster1[1, :])
     ax[2].axis('equal')
     ax[2].set_title(title_2, fontsize=18)
+    return fig
