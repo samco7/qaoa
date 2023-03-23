@@ -18,13 +18,14 @@ def objective(graph, x):
         return x_arr@sigma@x_arr
 
 
-def perturb_relaxed(perturbation_ratio, graph, relaxed_solution):
+def perturb_relaxed(perturbation_ratio, graph, relaxed_solution, random_seed=None):
     if len(relaxed_solution) > 2:
         relaxed_bits, relaxed_obj, bmz_angles = relaxed_solution
     else:
         relaxed_bits, relaxed_obj = relaxed_solution
         bmz_angles = None
 
+    np.random.seed(random_seed)
     exact_obj = akmaxsat(graph)[1]
     while relaxed_obj/exact_obj > perturbation_ratio:
         idx = np.random.choice(list(range(len(relaxed_bits))), len(relaxed_bits))[0]
@@ -37,16 +38,22 @@ def perturb_relaxed(perturbation_ratio, graph, relaxed_solution):
         return relaxed_bits, relaxed_obj, bmz_angles
     else:
         return relaxed_bits, relaxed_obj
+    np.random.seed(None)
 
 
-def random_graph(n_nodes, a=0, b=10):
+def random_graph(n_nodes, a=0, b=10, random_seed=None):
     G = nx.Graph()
     nodes = list(range(n_nodes))
+    np.random.seed(random_seed)
+    weights = np.random.uniform(a, b, n_nodes*(n_nodes - 1))
+    counter = 0
     for node1 in nodes:
         for node2 in nodes:
             if node1 != node2:
                 w = np.random.uniform(a, b)
-                G.add_edge(node1, node2, weight=w)
+                G.add_edge(node1, node2, weight=weights[counter])
+                counter += 1
+    np.random.seed(None)
     return G
 
 
