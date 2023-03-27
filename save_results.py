@@ -19,16 +19,16 @@ def save_result(res, experiment_name):
     # make a filename and directory corresponding to the date
     date = datetime.now(pytz.timezone('US/Eastern'))
     add_zero = lambda x: ('0' + str(x))[-2:]
-    day_path = f'./../../results/{experiment_name}/'
+    day_path = f'./../../data/{experiment_name}/'
     day_path += f'{date.year}-{add_zero(date.month)}-{add_zero(date.day)}'
     day_path += '/'
     if not exists(day_path):
         os.mkdir(day_path)
-    filename = f'{date.year}-{add_zero(date.month)}-{add_zero(date.day)}_results'
+    filename = f'{date.year}-{add_zero(date.month)}-{add_zero(date.day)}'
     check = filename
     counter = 1
     while True:
-        if exists(day_path + check + '.pickle'):
+        if exists(day_path + check + '_results.pickle'):
             check = filename
             check += '_' + str(counter)
             counter += 1
@@ -36,7 +36,7 @@ def save_result(res, experiment_name):
         break
 
     # save the results as a .pickle file
-    with open(day_path + check + '.pickle', 'wb') as f:
+    with open(day_path + check + '_results.pickle', 'wb') as f:
         pickle.dump(res, f)
 
 
@@ -51,7 +51,7 @@ def save_plot(experiment_name, filename_override=None):
     # make a filename and directory corresponding to the date
     date = datetime.now(pytz.timezone('US/Eastern'))
     add_zero = lambda x: ('0' + str(x))[-2:]
-    day_path = f'./../../plots/{experiment_name}/'
+    day_path = f'./../../data/{experiment_name}/'
     day_path += f'{date.year}-{add_zero(date.month)}-{add_zero(date.day)}'
     day_path += '/'
     if not exists(day_path):
@@ -60,7 +60,7 @@ def save_plot(experiment_name, filename_override=None):
     check = filename
     counter = 1
     while True:
-        if exists(day_path + check + '.png'):
+        if exists(day_path + check + '_plot.png'):
             check = filename
             check += '_' + str(counter)
             counter += 1
@@ -71,7 +71,7 @@ def save_plot(experiment_name, filename_override=None):
         check = filename_override
 
     # save the plot (as a png, with double resolution)
-    plt.savefig(day_path + check + '.png', facecolor='white', bbox_inches='tight', dpi=200)
+    plt.savefig(day_path + check + '_plot.png', facecolor='white', bbox_inches='tight', dpi=200)
 
 
 def load_result(path):
