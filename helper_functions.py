@@ -116,7 +116,10 @@ def get_ratio_counts(counts, graph):
     for count in counts.keys():
         val = objective(graph, count)
         ratio = round(val/exact_val, 4)
-        ratio_counts[ratio] = counts[count]
+        if ratio in ratio_counts.keys():
+            ratio_counts[ratio] += counts[count]
+        else:
+            ratio_counts[ratio] = counts[count]
     return ratio_counts
 
 
