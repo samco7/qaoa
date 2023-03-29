@@ -78,7 +78,7 @@ def plot_experiment_5(res, save=True):
     capprops=dict(color='k'),
     whiskerprops=dict(color='k'))
     ax[0].set_xticks(positions, labels)
-    ax[0].set_ylabel('Best sampled cut', fontsize=12)
+    ax[0].set_ylabel('Circuit expectation', fontsize=12)
     plt.grid(False, axis='x')
 
     ax[1].boxplot(vals, positions=positions, sym='.',
