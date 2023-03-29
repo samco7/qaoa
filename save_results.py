@@ -40,7 +40,7 @@ def save_result(res, experiment_name):
         pickle.dump(res, f)
 
 
-def save_plot(experiment_name):
+def save_plot(experiment_name, suffix=''):
     """
         Saves the results of an experiment as a pickle file.
 
@@ -60,7 +60,7 @@ def save_plot(experiment_name):
     check = filename
     counter = 1
     while True:
-        if exists(day_path + check + '_plot.png'):
+        if exists(day_path + check + '_' + suffix + '_plot.png'):
             check = filename
             check += '_' + str(counter)
             counter += 1
@@ -68,7 +68,7 @@ def save_plot(experiment_name):
         break
 
     # save the plot (as a png, with double resolution)
-    plt.savefig(day_path + check + '_plot.png', facecolor='white', bbox_inches='tight', dpi=200)
+    plt.savefig(day_path + check + '_' + suffix + '_plot.png', facecolor='white', bbox_inches='tight', dpi=200)
 
 
 def save_info(info, experiment_name):
