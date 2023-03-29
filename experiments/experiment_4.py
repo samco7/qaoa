@@ -70,8 +70,10 @@ def experiment_4(n_qubits, n_layers, n_trials, perturbation_ratio, backend=None,
     'bmz_rounded_improvement':bmz_rounded_improvement,
     'bmz_improvement':bmz_improvement,
     'shots':shots, 'n_layers':n_layers, 'n_qubits':n_qubits, 'n_trials':n_trials, 'perturbation ratio':perturbation_ratio}
+    info = {'n_qubits':n_qubits, 'n_layers':n_layers,'n_trials':n_trials, 'perturbation_ratio':perturbation_ratio, 'shots':shots}
     if save:
         save_result(res, 'experiment_4')
+        save_info(info, 'experiment_4')
     return res
 
 def plot_experiment_4(res, save=True):

@@ -6,14 +6,14 @@ from tqdm import tqdm
 from qiskit.providers.aer import AerSimulator
 
 
-def experiment_0(size_vals, n_trials, save=True):
+def experiment_0(graph_sizes, n_trials, save=True):
     gw_mean_ratios = []
     bmz_mean_ratios = []
     gw_mean_times = []
     bmz_mean_times = []
     n_vals = []
-    progress = tqdm(total=len(size_vals)*n_trials)
-    for n in np.random.choice(size_vals, size=len(size_vals), replace=False):
+    progress = tqdm(total=len(graph_sizes)*n_trials)
+    for n in np.random.choice(graph_sizes, size=len(graph_sizes), replace=False):
         n_vals.append(n)
         gw_ratios = []
         bmz_ratios = []
@@ -44,8 +44,10 @@ def experiment_0(size_vals, n_trials, save=True):
     bmz_mean_times = np.array(bmz_mean_times)
     index = np.argsort(n_vals)
     res = {'n_vals':n_vals, 'gw_mean_ratios':gw_mean_ratios, 'bmz_mean_ratios':bmz_mean_ratios, 'gw_mean_times':gw_mean_times, 'bmz_mean_times':bmz_mean_times, 'n_trials':n_trials}
+    info = {'graph_sizes':graph_sizes, 'n_trials':n_trials}
     if save:
         save_result(res, 'experiment_0')
+        save_info(info, 'experiment_0')
     return res
 
 

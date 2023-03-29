@@ -38,8 +38,10 @@ def experiment_3(n_qubits, n_layers, n_trials, shot_vals, backend=None, save=Tru
     progress.close()
 
     res = {'vals':vals, 'shot_vals':shot_vals, 'n_layers':n_layers, 'n_qubits':n_qubits, 'n_trials':n_trials}
+    info = {'n_qubits':n_qubits, 'n_layers':n_layers,'n_trials':n_trials, 'shot_vals':shot_vals}
     if save:
         save_result(res, 'experiment_3')
+        save_info(info, 'experiment_3')
     return res
 
 

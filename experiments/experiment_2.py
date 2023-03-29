@@ -73,8 +73,10 @@ def experiment_2(n_qubits, n_layers, n_trials, backend=None, shots=512, save=Tru
         'bmz_rounded_results':bmz_rounded_results,
         'bmz_results':bmz_results,
         'shots':shots, 'n_layers':n_layers, 'n_qubits':n_qubits, 'n_trials':n_trials}
+    info = {'n_qubits':n_qubits, 'n_layers':n_layers,'n_trials':n_trials, 'shots':shots}
     if save:
         save_result(res, 'experiment_2')
+        save_info(info, 'experiment_2')
     return res
 
 
