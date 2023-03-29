@@ -40,7 +40,7 @@ def save_result(res, experiment_name):
         pickle.dump(res, f)
 
 
-def save_plot(experiment_name, filename_override=None):
+def save_plot(experiment_name):
     """
         Saves the results of an experiment as a pickle file.
 
@@ -67,11 +67,39 @@ def save_plot(experiment_name, filename_override=None):
             continue
         break
 
-    if filename_override is not None:
-        check = filename_override
-
     # save the plot (as a png, with double resolution)
     plt.savefig(day_path + check + '_plot.png', facecolor='white', bbox_inches='tight', dpi=200)
+
+
+def save_info(info, experiment_name):
+    text = ''
+    for key in info.keys():
+        text += str(key)
+        text += ': '
+        text += str(info[key])
+        text += '\n'
+
+    # make a filename and directory corresponding to the date
+    date = datetime.now(pytz.timezone('US/Eastern'))
+    add_zero = lambda x: ('0' + str(x))[-2:]
+    day_path = f'./../../data/{experiment_name}/'
+    day_path += f'{date.year}-{add_zero(date.month)}-{add_zero(date.day)}'
+    day_path += '/'
+    if not exists(day_path):
+        os.mkdir(day_path)
+    filename = f'{date.year}-{add_zero(date.month)}-{add_zero(date.day)}'
+    check = filename
+    counter = 1
+    while True:
+        if exists(day_path + check + '_info.txt'):
+            check = filename
+            check += '_' + str(counter)
+            counter += 1
+            continue
+        break
+
+    with open(day_path + check + '_info.txt', 'w') as file:
+        file.write(text)
 
 
 def load_result(path):
