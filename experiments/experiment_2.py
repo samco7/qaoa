@@ -3,6 +3,7 @@ from quantum_solvers import *
 from helper_functions import *
 from save_results import *
 from tqdm import tqdm
+from seaborn import color_palette as cp
 from qiskit.providers.aer import AerSimulator
 
 
@@ -80,7 +81,7 @@ def experiment_2(n_qubits, n_layers, n_trials, backend=None, shots=512, save=Tru
     return res
 
 
-def plot_experiment_2(res, n_bins=20, save=True):
+def plot_experiment_2(res, n_bins=12, save=True, date=None):
     standard_expectations = res['standard_expectations']
     gw_rounded_expectations = res['gw_rounded_expectations']
     bmz_rounded_expectations = res['bmz_rounded_expectations']
@@ -91,6 +92,7 @@ def plot_experiment_2(res, n_bins=20, save=True):
     bmz_vals = res['bmz_vals']
     n_trials = res['n_trials']
     labels = ['Standard QAOA', 'Rounded GW-WS-QAOA', 'Rounded BMZ-WS-QAOA', 'BMZ-WS-QAOA']
+    colors = np.vstack((cp('deep')[:1], cp('deep')[2:3], cp('pastel')[1:2], cp('deep')[3:4]))
 
     vals = 100*np.round(np.vstack((standard_vals, gw_rounded_vals, bmz_rounded_vals, bmz_vals)).T, 6)
     expectations = 100*np.vstack((standard_expectations, gw_rounded_expectations, bmz_rounded_expectations, bmz_expectations)).T
@@ -105,11 +107,11 @@ def plot_experiment_2(res, n_bins=20, save=True):
 
     bin_width = (100 - min_val)/n_bins
     bins = np.arange(min_val, 100 + bin_width, bin_width)
-    width_ratio = 1.25*bin_width/100/(1 - min_val/100)
+    width_ratio = bin_width/100/(1 - min_val/100)
     fig, ax = plt.subplots(1, 2, width_ratios=[1 - width_ratio, width_ratio], figsize=(5.5, 2.5))
     ax = ax.ravel()
 
-    other_val_hist = ax[0].hist(other_vals, bins=bins, align='mid')
+    other_val_hist = ax[0].hist(other_vals, bins=bins, align='mid', color=colors, rwidth=1)
     ax[0].set_xticks(np.linspace(0, 100, 51))
     ax[0].tick_params(axis='both', which='both', labelsize=10)
     ax[0].set_xlim(min_val, 99.9999)
@@ -117,29 +119,30 @@ def plot_experiment_2(res, n_bins=20, save=True):
     ax[0].grid(False, axis='x')
     ax[0].set_xlabel('Cut size (% of maximum cut)', fontsize=12)
     ax[0].set_ylabel('Counts', fontsize=12)
-    ax[0].set_title('(a)', fontsize=12, x=.02, y=.9, backgroundcolor='white')
+    ax[0].set_title('(a)', fontsize=12, x=.03, y=.9, backgroundcolor='white')
 
-    perfect_val_hist = ax[1].hist(perfect_vals, bins=[100 - bin_width/2, 100 + bin_width/2], align='mid')
+    perfect_val_hist = ax[1].hist(perfect_vals, bins=[100 - bin_width/2, 100 + bin_width/2], align='mid', color=colors, rwidth=1)
     ax[1].set_xlim(100 - bin_width/2, 100 + bin_width/2)
     ax[1].set_ylim(0, np.max(perfect_val_hist[0]) + 5)
     ax[1].set_xticks([100], ['100'])
     ax[1].tick_params(axis='both', which='both', labelsize=10)
     ax[1].yaxis.tick_right()
     ax[1].grid(False, axis='x')
+    ax[1].grid(True, axis='y', color='white')
     ax[1].set_ylabel('Max cut counts', fontsize=12)
     ax[1].yaxis.set_label_position('right')
-    ax[1].set_facecolor('powderblue')
+    ax[1].set_facecolor('lightgrey')
 
     plt.tight_layout()
     fig.legend(labels, fontsize=10, loc='upper center', ncols=2, bbox_to_anchor=(.5, 1.2))
     if save:
-        save_plot('experiment_2', 'best_measurement')
+        save_plot('experiment_2', 'best_measurement', date=date)
     plt.show()
 
     bin_width = (100 - min_expectation)/n_bins
     bins = np.arange(min_expectation - bin_width, 100 + 2*bin_width, bin_width)
     fig = plt.figure(figsize=(5.5, 2.5))
-    expectation_hist = plt.hist(expectations, bins=bins, align='left')
+    expectation_hist = plt.hist(expectations, bins=bins, align='left', color=colors, rwidth=1)
     plt.xticks(np.linspace(0, 100, 26))
     plt.tick_params(axis='both', which='both', labelsize=10)
     plt.xlim(min_expectation - 2*bin_width, 100 + bin_width)
@@ -147,12 +150,11 @@ def plot_experiment_2(res, n_bins=20, save=True):
     plt.grid(False, axis='x')
     plt.xlabel('Cut size (% of maximum cut)', fontsize=12)
     plt.ylabel('Counts', fontsize=12)
-    # plt.legend(labels, fontsize=12, loc='upper center', ncols=2)
-    plt.title('(b)', fontsize=12, x=.02, y=.9, backgroundcolor='white')
+    plt.title('(b)', fontsize=12, x=.025, y=.9, backgroundcolor='white')
 
     plt.tight_layout()
     if save:
-        save_plot('experiment_2', 'circuit_expectation')
+        save_plot('experiment_2', suffix='circuit_expectation', date=date)
     plt.show()
 
 # def plot_experiment_2(res, save=True):
