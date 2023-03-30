@@ -141,7 +141,7 @@ def plot_experiment_2(res, n_bins=12, save=True, date=None):
 
     bin_width = (100 - min_expectation)/n_bins
     bins = np.arange(min_expectation - bin_width, 100 + 2*bin_width, bin_width)
-    fig = plt.figure(figsize=(5.5, 2.5))
+    fig = plt.figure(figsize=(5, 2.5))
     expectation_hist = plt.hist(expectations, bins=bins, align='left', color=colors, rwidth=1)
     plt.xticks(np.linspace(0, 100, 26))
     plt.tick_params(axis='both', which='both', labelsize=10)
