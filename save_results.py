@@ -40,7 +40,7 @@ def save_result(res, experiment_name):
         pickle.dump(res, f)
 
 
-def save_plot(experiment_name, suffix=''):
+def save_plot(experiment_name, suffix='', filepath=None):
     """
         Saves the results of an experiment as a pickle file.
 
@@ -48,29 +48,33 @@ def save_plot(experiment_name, suffix=''):
             experiment_name (str): type of experiment the results correspond to (e.g. clustering
                 or density).
     """
-    # make a filename and directory corresponding to the date
-    date = datetime.now(pytz.timezone('US/Eastern'))
-    add_zero = lambda x: ('0' + str(x))[-2:]
-    day_path = f'./../../data/{experiment_name}/'
-    day_path += f'{date.year}-{add_zero(date.month)}-{add_zero(date.day)}'
-    day_path += '/'
-    if not exists(day_path):
-        os.mkdir(day_path)
-    filename = f'{date.year}-{add_zero(date.month)}-{add_zero(date.day)}'
-    check = filename
-    counter = 1
-    if suffix != '':
-        suffix = '_' + suffix
-    while True:
-        if exists(day_path + check + suffix + '_plot.png'):
-            check = filename
-            check += '_' + str(counter)
-            counter += 1
-            continue
-        break
+    if filepath is None:
+        # make a filename and directory corresponding to the date
+        date = datetime.now(pytz.timezone('US/Eastern'))
+        add_zero = lambda x: ('0' + str(x))[-2:]
+        day_path = f'./../../data/{experiment_name}/'
+        day_path += f'{date.year}-{add_zero(date.month)}-{add_zero(date.day)}'
+        day_path += '/'
+        if not exists(day_path):
+            os.mkdir(day_path)
+        filename = f'{date.year}-{add_zero(date.month)}-{add_zero(date.day)}'
+        check = filename
+        counter = 1
+        if suffix != '':
+            suffix = '_' + suffix
+        while True:
+            if exists(day_path + check + suffix + '_plot.png'):
+                check = filename
+                check += '_' + str(counter)
+                counter += 1
+                continue
+            break
 
-    # save the plot (as a png, with double resolution)
-    plt.savefig(day_path + check + suffix + '_plot.png', facecolor='white', bbox_inches='tight', dpi=200)
+        # save the plot (as a png, with double resolution)
+        plt.savefig(day_path + check + suffix + '_plot.png', facecolor='white', bbox_inches='tight', dpi=200)
+
+    else:
+        plt.savefig(filepath, facecolor='white', bbox_inches='tight', dpi=200)
 
 
 def save_info(info, experiment_name):
