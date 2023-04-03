@@ -15,6 +15,7 @@ class QAOAResult:
         self.obj = None
         self.relaxed_obj = None
         self.bmz_angles = None
+        self.n_regularized = None
         self.counts = None
         self.expectation = None
         self.unique_samples = None
@@ -26,6 +27,8 @@ class QAOAResult:
         out += '\n' + 'obj: '.rjust(width) + str(self.obj)
         if self.relaxed_obj is not None:
             out += '\n' + 'relaxed_obj: '.rjust(width) + str(self.relaxed_obj)
+        if self.n_regularized is not None:
+            out += '\n' + 'n_regularized: '.rjust(width) + str(self.n_regularized)
         out += '\n' + 'expectation: '.rjust(width) + str(self.expectation)
         out += '\n' + 'unique_samples: '.rjust(width) + str(self.unique_samples)
         return out
@@ -54,6 +57,7 @@ class QAOASolver:
         self.__relaxed_bits = None
         self.__relaxed_obj = None
         self.__bmz_angles = None
+        self.__n_regularized = None
         self.__thetas = None
         self.__circ = None
 
@@ -70,14 +74,20 @@ class QAOASolver:
     def __set_thetas(self):
         if self.__warm_start_method == 'BMZ':
             angles = np.copy(self.__bmz_angles)
-            angles[np.where(np.abs(self.__bmz_angles) < self.__epsilon)] = self.__epsilon
-            angles[np.where(np.abs(self.__bmz_angles - np.pi) < self.__epsilon)] = np.pi + self.__epsilon
+            indices_0 = np.where(np.abs(self.__bmz_angles) < self.__epsilon)
+            angles[indices_0] = self.__epsilon
+            indices_1 = np.where(np.abs(self.__bmz_angles - np.pi) < self.__epsilon)
+            angles[indices_1] = np.pi + self.__epsilon
             self.__thetas = angles[::-1]
+            self.__n_regularized = len(indices_0[0]) + len(indices_1[0])
         elif self.__warm_start_method == 'BMZ Rounded' or self.__warm_start_method == 'GW Rounded':
             c_stars = np.zeros(self.__n_qubits)
-            c_stars[np.where(self.__relaxed_bits == 1)] = 1 - self.__epsilon
-            c_stars[np.where(self.__relaxed_bits == 0)] = self.__epsilon
+            indices_0 = np.where(self.__relaxed_bits == 1)
+            c_stars[indices_0] = 1 - self.__epsilon
+            indices_1 = np.where(self.__relaxed_bits == 0)
+            c_stars[indices_1] = self.__epsilon
             self.__thetas = [2*np.arcsin(np.sqrt(c_star)) for c_star in c_stars][::-1]
+            self.__n_regularized = len(indices_0[0]) + len(indices_1[0])
         elif self.__warm_start_method is None:
             self.__thetas = np.pi/2*np.ones(self.__n_qubits)
             return
@@ -216,6 +226,7 @@ class QAOASolver:
         res.obj = best_val
         res.relaxed_obj = self.__relaxed_obj
         res.bmz_angles = self.__bmz_angles
+        res.n_regularized = self.__n_regularized
         res.counts = counts
         res.expectation = self.__compute_expectation(counts)
         res.unique_samples = len(counts)
