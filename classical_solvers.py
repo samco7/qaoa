@@ -70,7 +70,7 @@ def BMZ(graph):
             j += 1
     bitstring = np.ones(N)
     bitstring[np.where(x_star == -1)] = 0
-    return bitstring, -gamma, np.mod(theta - alpha_star, 2*np.pi),
+    return bitstring, -gamma, np.mod(theta - alpha_star, 2*np.pi)
 
 
 def GW(graph):
