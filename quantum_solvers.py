@@ -70,6 +70,7 @@ class QAOASolver:
             return
         else:
             raise Exception('warm_start_method must be None, \'GW Rounded\', \'BMZ Rounded\', or \'BMZ\'.')
+        return self.__relaxed_bits, self.__relaxed_obj, self.__bmz_angles
 
     def __set_thetas(self):
         if self.__warm_start_method == 'BMZ':
