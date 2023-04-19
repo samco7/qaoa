@@ -7,7 +7,7 @@ from pyakmaxsat import AKMaxSATSolver
 from pyqubo import Array
 
 
-def BMZ(graph):
+def BMZ(graph, procedure_cut=False):
     W = nx.adjacency_matrix(graph).toarray()
     N = len(W)
 
@@ -45,31 +45,42 @@ def BMZ(graph):
     init_theta = np.random.uniform(0, 2*np.pi, N)
     theta = minimize(f, init_theta, method='Newton-CG', jac=df, hess=d2f).x
     theta = np.mod(theta, 2*np.pi)
-    theta_sorted = np.sort(theta)
-    alpha = 0
-    gamma = -np.inf
-    i = 1
-    j_list = np.where(theta_sorted > np.pi)[0]
-    if len(j_list) == 0:
-        j = N
-    else:
-        j = j_list[0]
-    theta_sorted = np.concatenate((theta_sorted, [2*np.pi]))
-    while alpha <= np.pi and j <= N:
-        x = generate_cut(theta, alpha)
-        obj = objective(x)
-        if obj > gamma:
-            gamma = obj
-            x_star = x
-            alpha_star = alpha
-        if theta_sorted[i] <= theta_sorted[j] - np.pi:
-            alpha = theta_sorted[i]
-            i += 1
+
+    if procedure_cut:
+        theta_sorted = np.sort(theta)
+        alpha = 0
+        gamma = -np.inf
+        i = 1
+        j_list = np.where(theta_sorted > np.pi)[0]
+        if len(j_list) == 0:
+            j = N
         else:
-            alpha = theta_sorted[j] - np.pi
-            j += 1
-    bitstring = np.ones(N)
-    bitstring[np.where(x_star == -1)] = 0
+            j = j_list[0]
+        theta_sorted = np.concatenate((theta_sorted, [2*np.pi]))
+        while alpha <= np.pi and j <= N:
+            x = generate_cut(theta, alpha)
+            obj = objective(x)
+            if obj > gamma:
+                gamma = obj
+                x_star = x
+                alpha_star = alpha
+            if theta_sorted[i] <= theta_sorted[j] - np.pi:
+                alpha = theta_sorted[i]
+                i += 1
+            else:
+                alpha = theta_sorted[j] - np.pi
+                j += 1
+        bitstring = np.ones(N)
+        bitstring[np.where(x_star == -1)] = 0
+
+    else:
+        idx = np.random.choice(np.arange(N))
+        alpha_star = theta[idx]
+        x_star = generate_cut(theta, alpha_star)
+        gamma = objective(x_star)
+        bitstring = np.ones(N)
+        bitstring[np.where(x_star == -1)] = 0
+
     return bitstring, -gamma, np.mod(theta - alpha_star, 2*np.pi)
 
 

@@ -7,18 +7,19 @@ from qiskit.providers.aer import AerSimulator
 
 
 def experiment_1(n_qubits, n_layers, n_trials, epsilon, backend=None, shots=512, save=True):
+    weights_set = list(range(1, 11))
     reg_list = []
     pole_distances = []
     progress = tqdm(total=n_trials)
     for i in range(n_trials):
-        graph = random_graph(n_qubits)
+        graph = random_graph(n_qubits, weights_set)
         exact_obj = akmaxsat(graph)[1]
 
         bmz_qaoa = QAOASolver(n_layers=n_layers, warm_start_method='BMZ', epsilon=epsilon, backend=backend, shots=shots)
-        bmz_qaoa._QAOASolver__graph = graph
-        bits, obj, angles = bmz_qaoa._QAOASolver__solve_relaxed()
-        bmz_qaoa._QAOASolver__set_thetas()
-        reg_list.append(bmz_qaoa._QAOASolver__n_regularized)
+        bmz_qaoa.graph = graph
+        bits, obj, angles = bmz_qaoa.solve_relaxed()
+        bmz_qaoa.set_thetas()
+        reg_list.append(bmz_qaoa.n_regularized)
 
         a = np.fmin(np.abs(angles), np.abs(angles - np.pi))
         b = np.fmin(a, np.abs(angles - 2*np.pi))
@@ -27,7 +28,7 @@ def experiment_1(n_qubits, n_layers, n_trials, epsilon, backend=None, shots=512,
     progress.close()
 
     res = {'regularizations':reg_list, 'pole_distances':pole_distances, 'epsilon':epsilon, 'shots':shots, 'n_layers':n_layers, 'n_qubits':n_qubits, 'n_trials':n_trials}
-    info = {'n_qubits':n_qubits, 'n_layers':n_layers,'n_trials':n_trials, 'epsilon':epsilon, 'shots':shots}
+    info = {'n_qubits':n_qubits, 'n_layers':n_layers,'n_trials':n_trials, 'epsilon':epsilon, 'shots':shots, 'weights_set':weights_set}
     if save:
         save_result(res, 'experiment_1')
         save_info(info, 'experiment_1')

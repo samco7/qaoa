@@ -39,15 +39,16 @@ def perturb_relaxed(perturbation_ratio, graph, relaxed_solution):
         return relaxed_bits, relaxed_obj
 
 
-def random_graph(n_nodes, a=0, b=10):
+def random_graph(n_nodes, weights_set, seed=None):
     G = nx.Graph()
     nodes = list(range(n_nodes))
-    weights = np.random.uniform(a, b, n_nodes*(n_nodes - 1))
+    np.random.seed(seed)
+    weights = np.random.choice(weights_set, n_nodes*(n_nodes - 1), replace=True)
+    np.random.seed(None)
     counter = 0
     for node1 in nodes:
         for node2 in nodes:
             if node1 != node2:
-                w = np.random.uniform(a, b)
                 G.add_edge(node1, node2, weight=weights[counter])
                 counter += 1
     return G

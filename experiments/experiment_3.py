@@ -7,11 +7,12 @@ from qiskit.providers.aer import AerSimulator
 
 
 def experiment_3(n_qubits, n_layers, n_trials, shot_vals, backend=None, save=True):
+    weights_set = list(range(1, 11))
     vals = np.zeros((n_trials, len(shot_vals)*4))
     progress = tqdm(total=len(shot_vals)*n_trials*4)
     for i in range(len(shot_vals)):
         for j in range(n_trials):
-            graph = random_graph(n_qubits)
+            graph = random_graph(n_qubits, weights_set)
             exact_val = akmaxsat(graph)[1]
 
             standard_qaoa = QAOASolver(n_layers, warm_start_method=None, epsilon=None, shots=shot_vals[i], backend=backend)
@@ -38,7 +39,7 @@ def experiment_3(n_qubits, n_layers, n_trials, shot_vals, backend=None, save=Tru
     progress.close()
 
     res = {'vals':vals, 'shot_vals':shot_vals, 'n_layers':n_layers, 'n_qubits':n_qubits, 'n_trials':n_trials}
-    info = {'n_qubits':n_qubits, 'n_layers':n_layers,'n_trials':n_trials, 'shot_vals':shot_vals}
+    info = {'n_qubits':n_qubits, 'n_layers':n_layers,'n_trials':n_trials, 'shot_vals':shot_vals, 'weights_set':weights_set}
     if save:
         save_result(res, 'experiment_3')
         save_info(info, 'experiment_3')

@@ -7,6 +7,7 @@ from qiskit.providers.aer import AerSimulator
 
 
 def experiment_0(graph_sizes, n_trials, save=True):
+    weights_set = list(range(1, 11))
     gw_mean_ratios = []
     bmz_mean_ratios = []
     gw_mean_times = []
@@ -20,7 +21,7 @@ def experiment_0(graph_sizes, n_trials, save=True):
         gw_times = []
         bmz_times = []
         for i in range(n_trials):
-            graph = random_graph(n)
+            graph = random_graph(n, weights_set)
             exact_val = akmaxsat(graph)[1]
             start = time()
             gw_val = GW(graph)[1]
@@ -44,7 +45,7 @@ def experiment_0(graph_sizes, n_trials, save=True):
     bmz_mean_times = np.array(bmz_mean_times)
     index = np.argsort(n_vals)
     res = {'n_vals':n_vals, 'gw_mean_ratios':gw_mean_ratios, 'bmz_mean_ratios':bmz_mean_ratios, 'gw_mean_times':gw_mean_times, 'bmz_mean_times':bmz_mean_times, 'n_trials':n_trials}
-    info = {'graph_sizes':graph_sizes, 'n_trials':n_trials}
+    info = {'graph_sizes':graph_sizes, 'n_trials':n_trials, 'weights_set':weights_set}
     if save:
         save_result(res, 'experiment_0')
         save_info(info, 'experiment_0')

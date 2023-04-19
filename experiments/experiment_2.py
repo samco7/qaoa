@@ -7,7 +7,7 @@ from seaborn import color_palette as cp
 from qiskit.providers.aer import AerSimulator
 
 
-def experiment_2(n_qubits, n_layers, n_trials, backend=None, shots=512, save=True):
+def experiment_2(n_qubits, n_layers, n_trials, optimizer='COBYLA', backend=None, shots=512, save=True):
     standard_expectations = []
     standard_vals = []
     standard_results = []
@@ -15,6 +15,10 @@ def experiment_2(n_qubits, n_layers, n_trials, backend=None, shots=512, save=Tru
     gw_rounded_expectations = []
     gw_rounded_vals = []
     gw_rounded_results = []
+
+    state_only_expectations = []
+    state_only_vals = []
+    state_only_results = []
 
     bmz_rounded_expectations = []
     bmz_rounded_vals = []
@@ -24,23 +28,25 @@ def experiment_2(n_qubits, n_layers, n_trials, backend=None, shots=512, save=Tru
     bmz_vals = []
     bmz_results = []
 
-    progress = tqdm(total=n_trials*4)
+    weights_set = list(range(1, 11))
+    progress = tqdm(total=n_trials*5)
     for i in range(n_trials):
-        graph = random_graph(n_qubits)
+        graph = random_graph(n_qubits, weights_set)
         exact_val = akmaxsat(graph)[1]
 
         standard_qaoa = QAOASolver(n_layers=n_layers, warm_start_method=None, epsilon=None, backend=backend, shots=shots)
         gw_rounded_qaoa = QAOASolver(n_layers=n_layers, warm_start_method='GW Rounded', epsilon=.25, backend=backend, shots=shots)
+        state_only_qaoa = QAOASolver(n_layers=n_layers, warm_start_method='BMZ', epsilon=.2, backend=backend, shots=shots, adjust_mixer=False)
         bmz_rounded_qaoa = QAOASolver(n_layers=n_layers, warm_start_method='BMZ Rounded', epsilon=.25, backend=backend, shots=shots)
         bmz_qaoa = QAOASolver(n_layers=n_layers, warm_start_method='BMZ', epsilon=.2, backend=backend, shots=shots)
 
-        standard_res = standard_qaoa.solve(graph)
+        standard_res = standard_qaoa.solve(graph, optimizer=optimizer)
         standard_expectations.append(standard_res.expectation/exact_val)
         standard_vals.append(standard_res.obj/exact_val)
         standard_results.append(standard_res)
         progress.update(1)
 
-        gw_rounded_res = gw_rounded_qaoa.solve(graph)
+        gw_rounded_res = gw_rounded_qaoa.solve(graph, optimizer=optimizer)
         gw_rounded_expectations.append(gw_rounded_res.expectation/exact_val)
         gw_rounded_vals.append(gw_rounded_res.obj/exact_val)
         gw_rounded_results.append(gw_rounded_res)
@@ -48,13 +54,19 @@ def experiment_2(n_qubits, n_layers, n_trials, backend=None, shots=512, save=Tru
 
         bmz_relaxed = BMZ(graph)
 
-        bmz_rounded_res = bmz_rounded_qaoa.solve(graph, relaxed_solution=bmz_relaxed)
+        state_only_res = state_only_qaoa.solve(graph, relaxed_solution=bmz_relaxed, optimizer=optimizer)
+        state_only_expectations.append(state_only_res.expectation/exact_val)
+        state_only_vals.append(state_only_res.obj/exact_val)
+        state_only_results.append(state_only_res)
+        progress.update(1)
+
+        bmz_rounded_res = bmz_rounded_qaoa.solve(graph, relaxed_solution=bmz_relaxed, optimizer=optimizer)
         bmz_rounded_expectations.append(bmz_rounded_res.expectation/exact_val)
         bmz_rounded_vals.append(bmz_rounded_res.obj/exact_val)
         bmz_rounded_results.append(bmz_rounded_res)
         progress.update(1)
 
-        bmz_res = bmz_qaoa.solve(graph, relaxed_solution=bmz_relaxed)
+        bmz_res = bmz_qaoa.solve(graph, relaxed_solution=bmz_relaxed, optimizer=optimizer)
         bmz_expectations.append(bmz_res.expectation/exact_val)
         bmz_vals.append(bmz_res.obj/exact_val)
         bmz_results.append(bmz_res)
@@ -63,18 +75,21 @@ def experiment_2(n_qubits, n_layers, n_trials, backend=None, shots=512, save=Tru
 
     res = {'standard_expectations':standard_expectations,
         'gw_rounded_expectations':gw_rounded_expectations,
+        'state_only_expectations':state_only_expectations,
         'bmz_rounded_expectations':bmz_rounded_expectations,
         'bmz_expectations':bmz_expectations,
         'standard_vals':standard_vals,
         'gw_rounded_vals':gw_rounded_vals,
+        'state_only_vals':state_only_vals,
         'bmz_rounded_vals':bmz_rounded_vals,
         'bmz_vals':bmz_vals,
         'standard_results':standard_results,
         'gw_rounded_results':gw_rounded_results,
+        'state_only_results':state_only_results,
         'bmz_rounded_results':bmz_rounded_results,
         'bmz_results':bmz_results,
-        'shots':shots, 'n_layers':n_layers, 'n_qubits':n_qubits, 'n_trials':n_trials}
-    info = {'n_qubits':n_qubits, 'n_layers':n_layers,'n_trials':n_trials, 'shots':shots}
+        'shots':shots, 'n_layers':n_layers, 'n_qubits':n_qubits, 'n_trials':n_trials, 'optimizer':optimizer}
+    info = {'n_qubits':n_qubits, 'n_layers':n_layers,'n_trials':n_trials, 'shots':shots, 'weights_set':weights_set, 'optimizer':optimizer}
     if save:
         save_result(res, 'experiment_2')
         save_info(info, 'experiment_2')
@@ -84,23 +99,27 @@ def experiment_2(n_qubits, n_layers, n_trials, backend=None, shots=512, save=Tru
 def plot_experiment_2(res, n_bins=12, save=True, date=None):
     standard_expectations = res['standard_expectations']
     gw_rounded_expectations = res['gw_rounded_expectations']
+    state_only_expectations = res['state_only_expectations']
     bmz_rounded_expectations = res['bmz_rounded_expectations']
     bmz_expectations = res['bmz_expectations']
     standard_vals = res['standard_vals']
     gw_rounded_vals = res['gw_rounded_vals']
+    state_only_vals = res['state_only_vals']
     bmz_rounded_vals = res['bmz_rounded_vals']
     bmz_vals = res['bmz_vals']
     n_trials = res['n_trials']
-    labels = ['Standard QAOA', 'Rounded GW-WS-QAOA', 'Rounded BMZ-WS-QAOA', 'BMZ-WS-QAOA']
-    colors = np.vstack((cp('deep')[:1], cp('deep')[2:3], cp('pastel')[1:2], cp('deep')[3:4]))
+    labels = ['Standard QAOA', 'Rounded GW-WS-QAOA', 'BMZ-QAOA State Only', 'Rounded BMZ-WS-QAOA', 'BMZ-WS-QAOA']
+    colors = np.vstack((cp('deep')[:1], cp('deep')[2:3], cp('deep')[4:5], cp('pastel')[1:2], cp('deep')[3:4]))
 
-    vals = 100*np.round(np.vstack((standard_vals, gw_rounded_vals, bmz_rounded_vals, bmz_vals)).T, 6)
-    expectations = 100*np.vstack((standard_expectations, gw_rounded_expectations, bmz_rounded_expectations, bmz_expectations)).T
+    vals = 100*np.round(np.vstack((standard_vals, gw_rounded_vals, state_only_vals, bmz_rounded_vals, bmz_vals)).T, 6)
+    expectations = 100*np.vstack((standard_expectations, gw_rounded_expectations, state_only_expectations, bmz_rounded_expectations, bmz_expectations)).T
     min_val = np.round(np.min(vals), 2)
+    if min_val == 100:
+        min_val = 95
     min_expectation = np.round(np.min(expectations), 2)
 
     other_vals = np.copy(vals)
-    perfect_vals = np.full((n_trials, 4), np.nan)
+    perfect_vals = np.full((n_trials, 5), np.nan)
     perfect_vals_index = np.where(vals == 100)
     other_vals[perfect_vals_index] = np.nan
     perfect_vals[perfect_vals_index] = 100
@@ -134,7 +153,7 @@ def plot_experiment_2(res, n_bins=12, save=True, date=None):
     ax[1].set_facecolor('lightgrey')
 
     plt.tight_layout()
-    fig.legend(labels, fontsize=10, loc='upper center', ncols=2, bbox_to_anchor=(.5, 1.2))
+    fig.legend(labels, fontsize=10, loc='upper center', ncols=2, bbox_to_anchor=(.5, 1.3))
     if save:
         save_plot('experiment_2', 'best_measurement', date=date)
     plt.show()
