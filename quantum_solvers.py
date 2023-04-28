@@ -25,6 +25,8 @@ class QAOAResult:
         self.unique_samples = None
         self.optimizer = None
         self.opt_terminated = None
+        self.n_circ_evals = None
+        self.max_circ_evals = None
         self.qaoa_hyperparameters = dict()
 
     def __str__(self):
@@ -38,8 +40,8 @@ class QAOAResult:
         out += '\n' + 'expectation: '.rjust(width) + str(self.expectation)
         out += '\n' + 'unique_samples: '.rjust(width) + str(self.unique_samples)
         out += '\n' + 'optimizer: '.rjust(width) + str(self.optimizer)
-        if self.optimizer == 'ADAM':
-            out += '\n' + 'opt_terminated: '.rjust(width) + str(self.opt_terminated)
+        out += '\n' + 'n_circ_evals: : '.rjust(width) + str(self.n_circ_evals)
+        out += '\n' + 'opt_terminated: '.rjust(width) + str(self.opt_terminated)
         return out
 
     def __repr__(self):
@@ -47,7 +49,7 @@ class QAOAResult:
 
 
 class QAOASolver:
-    def __init__(self, n_layers, warm_start_method=None, epsilon=None, adjust_mixer=True, backend=None, shots=512):
+    def __init__(self, n_layers, warm_start_method=None, epsilon=None, adjust_mixer=True, backend=None, shots=512, max_circ_evals=None):
         self.n_layers = n_layers
         allowed_methods = [None, 'GW Rounded', 'BMZ Rounded', 'BMZ']
         check = warm_start_method in allowed_methods
@@ -86,6 +88,8 @@ class QAOASolver:
         self.circ_parameters = None
         self.optimizer = None
         self.opt_ended_early = False
+        self.n_circ_evals = 0
+        self.max_circ_evals = max_circ_evals
 
     def solve_relaxed(self):
         if self.warm_start_method == 'BMZ Rounded' or self.warm_start_method == 'BMZ':
@@ -185,6 +189,7 @@ class QAOASolver:
         for gamma, j in zip(self.circ_parameters['gammas'], range(self.n_layers)):
             bound_values[gamma] = gammas[j]
         bound_circuit = self.circ.bind_parameters(bound_values)
+        self.n_circ_evals += 1
         return self.backend.run(bound_circuit, shots=self.shots).result().get_counts()
 
     def compute_expectation(self, counts):
@@ -244,18 +249,19 @@ class QAOASolver:
             return expectation
 
         self.optimizer = optimizer
+        if self.max_circ_evals is not None:
+            maxiter = self.max_circ_evals - 1
+        else:
+            maxiter = None
         if optimizer == 'COBYLA':
-            optimized_params = minimize(qaoa_objective, initial_params, method='COBYLA').x
+            opt_res = minimize(qaoa_objective, initial_params,
+            method='COBYLA', options={'maxiter':maxiter, 'tol':10**(-5)})
+            self.opt_ended_early = not opt_res.success
+            optimized_params = opt_res.x
         elif optimizer == 'ADAM':
-            maxiter = 1000
             adam = ADAM(maxiter=maxiter, amsgrad=True, tol=1e-2, lr=1e-1)
-            # operator = Operator(self.circ)
-            # params = [self.circ_parameters['betas'], self.circ_parameters['gammas']]
-            # operator = CircuitStateFn(primitive=self.circ)
-            # grad = Gradient(grad_method='lin_comb').convert(operator=operator, params=params)
-            res = adam.minimize(qaoa_objective, initial_params)
-            optimized_params = res.x
-            # print(res.nfev)
+            opt_res = adam.minimize(qaoa_objective, initial_params)
+            optimized_params = opt_res.x
             if res.nfev == maxiter:
                 self.opt_ended_early = True
                 print('Optimization terminated early.')
@@ -285,6 +291,8 @@ class QAOASolver:
         res.expectation = self.compute_expectation(counts)
         res.unique_samples = len(counts)
         res.optimizer = optimizer
+        res.n_circ_evals = self.n_circ_evals
+        res.max_circ_evals = self.max_circ_evals
         res.opt_terminated = not self.opt_ended_early
         hyperparameters = dict()
         hyperparameters['epsilon'] = self.epsilon
