@@ -6,7 +6,7 @@ from tqdm import tqdm
 from qiskit.providers.aer import AerSimulator
 
 
-def experiment_5(n_qubits, n_trials, layer_vals, backend=None, shots=512, save=True):
+def experiment_5(n_qubits, n_trials, layer_vals, backend=None, shots=512, save=True, max_circ_evals=None):
     weights_set = list(range(1, 11))
     expectations = np.zeros((n_trials, len(layer_vals)*4))
     vals = np.copy(expectations)
@@ -16,10 +16,10 @@ def experiment_5(n_qubits, n_trials, layer_vals, backend=None, shots=512, save=T
             graph = random_graph(n_qubits, weights_set)
             exact_val = akmaxsat(graph)[1]
 
-            standard_qaoa = QAOASolver(layer_vals[i], warm_start_method=None, epsilon=None, shots=shots, backend=backend)
-            gw_rounded_qaoa = QAOASolver(layer_vals[i], warm_start_method='GW Rounded', epsilon=.25, shots=shots, backend=backend)
-            bmz_rounded_qaoa = QAOASolver(layer_vals[i], warm_start_method='BMZ Rounded', epsilon=.25, shots=shots, backend=backend)
-            bmz_qaoa = QAOASolver(layer_vals[i], warm_start_method='BMZ', epsilon=.2, shots=shots, backend=backend)
+            standard_qaoa = QAOASolver(layer_vals[i], warm_start_method=None, epsilon=None, shots=shots, backend=backend, max_circ_evals=max_circ_evals)
+            gw_rounded_qaoa = QAOASolver(layer_vals[i], warm_start_method='GW Rounded', epsilon=.25, shots=shots, backend=backend, max_circ_evals=max_circ_evals)
+            bmz_rounded_qaoa = QAOASolver(layer_vals[i], warm_start_method='BMZ Rounded', epsilon=.25, shots=shots, backend=backend, max_circ_evals=max_circ_evals)
+            bmz_qaoa = QAOASolver(layer_vals[i], warm_start_method='BMZ', epsilon=.2, shots=shots, backend=backend, max_circ_evals=max_circ_evals)
 
             standard_res = standard_qaoa.solve(graph)
             progress.update(1)
