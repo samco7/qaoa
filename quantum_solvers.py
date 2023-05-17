@@ -3,9 +3,6 @@ import numpy as np
 import networkx as nx
 from scipy.optimize import minimize
 from qiskit import *
-from qiskit.quantum_info.operators import Operator
-from qiskit.opflow.gradients import Gradient
-from qiskit.opflow import CircuitStateFn
 from qiskit.algorithms.optimizers import ADAM
 from qiskit.providers.aer import AerSimulator
 from qiskit.circuit import Parameter
@@ -134,7 +131,7 @@ class QAOASolver:
             qc = QuantumCircuit(self.n_qubits)
             for pair in list(self.graph.edges()):
                 qc.cx(pair[0], pair[1])
-                qc.rz(2*parameter, pair[1])
+                qc.rz(2*parameter*w[pair], pair[1])
                 qc.cx(pair[0], pair[1])
             return qc
 
