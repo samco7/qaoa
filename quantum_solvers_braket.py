@@ -128,7 +128,7 @@ class QAOASolver:
             w = nx.get_edge_attributes(self.graph, "weight")
             for pair in list(self.graph.edges()):
                 circ.cnot(pair[0], pair[1])
-                circ.rz(pair[1], 2*parameter*w[pair])
+                circ.rz(pair[1], -parameter*w[pair])
                 circ.cnot(pair[0], pair[1])
             # return qc
 
