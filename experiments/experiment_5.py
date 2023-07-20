@@ -8,17 +8,17 @@ from qiskit.providers.aer import AerSimulator
 
 def experiment_5(n_qubits, n_trials, layer_vals, backend=None, shots=512, save=True, max_circ_evals=None):
     weights_set = list(range(1, 11))
-    expectations = np.zeros((n_trials, len(layer_vals)*4))
+    expectations = np.zeros((n_trials, len(layer_vals)*5))
     vals = np.copy(expectations)
-    progress = tqdm(total=len(layer_vals)*n_trials*4)
-    for i in range(len(layer_vals)):
-        for j in range(n_trials):
-            graph = random_graph(n_qubits, weights_set)
-            exact_val = akmaxsat(graph)[1]
-
+    progress = tqdm(total=len(layer_vals)*n_trials*5)
+    for j in range(n_trials):
+        graph = random_graph(n_qubits, weights_set)
+        exact_val = akmaxsat(graph)[1]
+        for i in range(len(layer_vals)):
             standard_qaoa = QAOASolver(layer_vals[i], warm_start_method=None, epsilon=None, shots=shots, backend=backend, max_circ_evals=max_circ_evals)
             gw_rounded_qaoa = QAOASolver(layer_vals[i], warm_start_method='GW Rounded', epsilon=.25, shots=shots, backend=backend, max_circ_evals=max_circ_evals)
             bmz_rounded_qaoa = QAOASolver(layer_vals[i], warm_start_method='BMZ Rounded', epsilon=.25, shots=shots, backend=backend, max_circ_evals=max_circ_evals)
+            state_only_qaoa = QAOASolver(n_layers=n_layers, warm_start_method='BMZ', epsilon=.2, backend=backend, shots=shots, adjust_mixer=False)
             bmz_qaoa = QAOASolver(layer_vals[i], warm_start_method='BMZ', epsilon=.2, shots=shots, backend=backend, max_circ_evals=max_circ_evals)
 
             standard_res = standard_qaoa.solve(graph)
@@ -30,18 +30,22 @@ def experiment_5(n_qubits, n_trials, layer_vals, backend=None, shots=512, save=T
 
             bmz_rounded_res = bmz_rounded_qaoa.solve(graph, relaxed_solution=bmz_relaxed)
             progress.update(1)
+            state_only_res = state_only_qaoa.solve(graph, relaxed_solution=bmz_relaxed)
+            progress.update(1)
             bmz_res = bmz_qaoa.solve(graph, relaxed_solution=bmz_relaxed)
             progress.update(1)
 
             expectations[j, i] = standard_res.expectation/exact_val
             expectations[j, len(layer_vals) + i] = gw_rounded_res.expectation/exact_val
             expectations[j, 2*len(layer_vals) + i] = bmz_rounded_res.expectation/exact_val
-            expectations[j, 3*len(layer_vals) + i] = bmz_res.expectation/exact_val
+            expectations[j, 3*len(layer_vals) + i] = state_only_res.expectation/exact_val
+            expectations[j, 4*len(layer_vals) + i] = bmz_res.expectation/exact_val
 
             vals[j, i] = standard_res.obj/exact_val
             vals[j, len(layer_vals) + i] = gw_rounded_res.obj/exact_val
             vals[j, 2*len(layer_vals) + i] = bmz_rounded_res.obj/exact_val
-            vals[j, 3*len(layer_vals) + i] = bmz_res.obj/exact_val
+            vals[j, 3*len(layer_vals) + i] = state_only_res.obj/exact_val
+            vals[j, 4*len(layer_vals) + i] = bmz_res.obj/exact_val
     progress.close()
 
     res = {'expectations':expectations, 'vals':vals, 'layer_vals':layer_vals, 'shots':shots, 'n_qubits':n_qubits, 'n_trials':n_trials}
@@ -62,7 +66,7 @@ def plot_experiment_5(res, save=True):
     grouping = np.arange(1, N + 1, 1)
 
     positions = np.concatenate((grouping, grouping + N + 1, grouping + 2*(N + 1), grouping + 3* (N + 1)))
-    algorithms = ['Standard QAOA', 'GW-Rounded-WS-QAOA', 'BMZ-Rounded-WS-QAOA', 'BMZ-WS-QAOA']
+    algorithms = ['Standard QAOA', 'GW-Rounded-WS-QAOA', 'BMZ-Rounded-WS-QAOA', 'BMZ-WS-QAOA State Only', 'BMZ-WS-QAOA']
     labels = []
     #inelegantbutworks
     counter = 0

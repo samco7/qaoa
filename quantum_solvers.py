@@ -130,9 +130,6 @@ class QAOASolver:
             w = nx.get_edge_attributes(self.graph, "weight")
             qc = QuantumCircuit(self.n_qubits)
             for pair in list(self.graph.edges()):
-                # qc.cx(pair[0], pair[1])
-                # qc.rz(2*parameter*w[pair], pair[1])
-                # qc.cx(pair[0], pair[1])
                 qc.rzz(-parameter*w[pair], pair[0], pair[1])
             return qc
 

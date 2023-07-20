@@ -7,22 +7,27 @@ from seaborn import color_palette as cp
 from qiskit.providers.aer import AerSimulator
 
 
-def experiment_6(solvers, n_betas_inner=20, n_betas_outer=20, n_gammas_inner=20, n_gammas_outer=20, save=True, seed_used=None):
+def experiment_6(solvers, beta_step=.1, gamma_step=.1, save=True, seed_used=None):
     graph = solvers[0].graph
     exact_val = akmaxsat(graph)[1]
     n_qubits = len(graph.nodes())
     n_layers = solvers[0].n_layers
     shots = solvers[0].shots
 
-    betas_inner = np.linspace(-1, 1, n_betas_inner)
-    betas_outer = np.linspace(1, np.pi, n_betas_outer//2 + 1)[1:]
-    betas = np.concatenate((-betas_outer[::-1], betas_inner, betas_outer))
+    # betas_inner = np.linspace(-1, 1, n_betas_inner)
+    # betas_outer = np.linspace(1, np.pi, n_betas_outer//2 + 1)[1:]
+    # betas = np.concatenate((-betas_outer[::-1], betas_inner, betas_outer))
+    betas_positive = np.arange(0, np.pi, beta_step)
+    betas = np.concatenate((-betas_positive[::-1], betas_positive[1:]))
     n_betas = len(betas)
 
-    gammas_inner = np.linspace(-1, 1, n_gammas_inner)
-    gammas_outer = np.linspace(1, np.pi, n_gammas_outer//2 + 1)[1:]
-    gammas = np.concatenate(((-gammas_outer[::-1], gammas_inner, gammas_outer)))
+    # gammas_inner = np.linspace(-1, 1, n_gammas_inner)
+    # gammas_outer = np.linspace(1, np.pi, n_gammas_outer//2 + 1)[1:]
+    # gammas = np.concatenate(((-gammas_outer[::-1], gammas_inner, gammas_outer)))
+    gammas_positive = np.arange(0, np.pi, gamma_step)
+    gammas = np.concatenate((-gammas_positive[::-1], gammas_positive[1:]))
     n_gammas = len(gammas)
+
     X, Y = np.meshgrid(betas, gammas)
 
     labels = []
@@ -40,13 +45,13 @@ def experiment_6(solvers, n_betas_inner=20, n_betas_outer=20, n_gammas_inner=20,
         landscapes.append(landscape.T)
     progress.close()
     res = {'beta_mesh':X, 'gamma_mesh':Y, 'landscapes':landscapes, 'solvers':solvers,
-    'shots':shots, 'n_layers':n_layers, 'n_qubits':n_qubits,
-    'n_betas_inner':n_betas_inner, 'n_betas_outer':n_betas_outer,
-    'n_gammas_inner':n_gammas_inner, 'n_gammas_outer':n_gammas_outer, 'labels':labels}
-    info = {'n_qubits':n_qubits, 'n_layers':n_layers,
-    'n_betas_inner':n_betas_inner, 'n_betas_outer':n_betas_outer,
-    'n_gammas_inner':n_gammas_inner, 'n_gammas_outer':n_gammas_outer,
-    'shots':shots,  'seed':seed_used}
+    'shots':shots, 'n_layers':n_layers, 'n_qubits':n_qubits, 'beta_step':beta_step, 'gamma_step':gamma_step, 'labels':labels}
+    # 'n_betas_inner':n_betas_inner, 'n_betas_outer':n_betas_outer,
+    # 'n_gammas_inner':n_gammas_inner, 'n_gammas_outer':n_gammas_outer
+    info = {'n_qubits':n_qubits, 'n_layers':n_layers, 'beta_step':beta_step, 'gamma_step':gamma_step, 'shots':shots,  'seed':seed_used}
+
+    # 'n_betas_inner':n_betas_inner, 'n_betas_outer':n_betas_outer,
+    # 'n_gammas_inner':n_gammas_inner, 'n_gammas_outer':n_gammas_outer,
     if save:
         save_result(res, 'experiment_6')
         save_info(info, 'experiment_6')

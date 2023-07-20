@@ -108,7 +108,7 @@ def plot_experiment_2(res, n_bins=12, save=True, date=None):
     bmz_rounded_vals = res['bmz_rounded_vals']
     bmz_vals = res['bmz_vals']
     n_trials = res['n_trials']
-    labels = ['Standard QAOA', 'Rounded GW-WS-QAOA', 'BMZ-QAOA State Only', 'Rounded BMZ-WS-QAOA', 'BMZ-WS-QAOA']
+    labels = ['Standard QAOA', 'Rounded GW-WS-QAOA', 'BMZ-WS-QAOA State Only', 'Rounded BMZ-WS-QAOA', 'BMZ-WS-QAOA']
     colors = np.vstack((cp('deep')[:1], cp('deep')[2:3], cp('deep')[4:5], cp('pastel')[1:2], cp('deep')[3:4]))
 
     vals = 100*np.round(np.vstack((standard_vals, gw_rounded_vals, state_only_vals, bmz_rounded_vals, bmz_vals)).T, 6)
