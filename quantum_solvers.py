@@ -231,6 +231,29 @@ class QAOASolver:
 
     def solve(self, graph, optimizer='COBYLA', relaxed_solution=None):
         self.initialize_problem(graph, relaxed_solution)
+        if self.n_layers == 0:
+            res = QAOAResult()
+            res.bitstring = self.relaxed_bits
+            res.relaxed_bitstring = self.relaxed_bits
+            res.obj = self.relaxed_obj
+            res.relaxed_obj = self.relaxed_obj
+            res.bmz_angles = self.bmz_angles
+            res.n_regularized = None
+            res.counts = None
+            res.expectation = None
+            res.unique_samples = 1
+            res.optimizer = None
+            res.n_circ_evals = 0
+            res.max_circ_evals = None
+            res.opt_terminated = True
+            hyperparameters = dict()
+            hyperparameters['epsilon'] = None
+            hyperparameters['n_qubits'] = self.n_qubits
+            hyperparameters['n_layers'] = self.n_layers
+            hyperparameters['shots'] = None
+            hyperparameters['warm_start_method'] = None
+            res.qaoa_hyperparameters = hyperparameters
+            return res
 
         initial_beta = np.random.uniform(-.001, .001, self.n_layers)
         initial_gamma = np.random.uniform(-.001, .001, self.n_layers)

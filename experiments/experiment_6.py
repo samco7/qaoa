@@ -7,7 +7,7 @@ from seaborn import color_palette as cp
 from qiskit.providers.aer import AerSimulator
 
 
-def experiment_6(solvers, beta_step=.1, gamma_step=.1, save=True, seed_used=None):
+def experiment_6(solvers, beta_max=np.pi, gamma_max=np.pi, beta_step=.1, gamma_step=.1, save=True, seed_used=None):
     graph = solvers[0].graph
     exact_val = akmaxsat(graph)[1]
     n_qubits = len(graph.nodes())
@@ -17,14 +17,14 @@ def experiment_6(solvers, beta_step=.1, gamma_step=.1, save=True, seed_used=None
     # betas_inner = np.linspace(-1, 1, n_betas_inner)
     # betas_outer = np.linspace(1, np.pi, n_betas_outer//2 + 1)[1:]
     # betas = np.concatenate((-betas_outer[::-1], betas_inner, betas_outer))
-    betas_positive = np.arange(0, np.pi, beta_step)
+    betas_positive = np.arange(0, beta_max, beta_step)
     betas = np.concatenate((-betas_positive[::-1], betas_positive[1:]))
     n_betas = len(betas)
 
     # gammas_inner = np.linspace(-1, 1, n_gammas_inner)
     # gammas_outer = np.linspace(1, np.pi, n_gammas_outer//2 + 1)[1:]
     # gammas = np.concatenate(((-gammas_outer[::-1], gammas_inner, gammas_outer)))
-    gammas_positive = np.arange(0, np.pi, gamma_step)
+    gammas_positive = np.arange(0, gamma_max, gamma_step)
     gammas = np.concatenate((-gammas_positive[::-1], gammas_positive[1:]))
     n_gammas = len(gammas)
 
@@ -64,10 +64,16 @@ def plot_experiment_6(res, save=True, date=None, cmap='magma'):
     landscapes = res['landscapes']
     labels = res['labels']
 
-    vmin = 1
-    for landscape in landscapes:
+    vmins = np.zeros(len(landscapes))
+    vmaxes = np.zeros(len(landscapes))
+    for landscape, i in zip(landscapes, range(len(landscapes))):
+        vmin = 1
+        vmax = 0
         for item in landscape.ravel():
             if item < vmin: vmin = item
+            if item > vmax: vmax = item
+        vmins[i] = vmin
+        vmaxes[i] = vmax
 
     n_rows = int(np.ceil(len(labels)/2))
     fig, ax = plt.subplots(n_rows, 2, figsize=(8, 3.5*n_rows))
@@ -81,7 +87,7 @@ def plot_experiment_6(res, save=True, date=None, cmap='magma'):
 
 
     for i in range(len(landscapes)):
-        mesh = ax[i].pcolormesh(X, Y, landscapes[i], cmap=cmap, vmin=vmin, vmax=1)
+        mesh = ax[i].pcolormesh(X, Y, landscapes[i], cmap=cmap, vmin=vmins[i], vmax=vmaxes[i])
         ax[i].set_xlabel(r'$\beta$', fontsize=12)
         ax[i].set_ylabel(r'$\gamma$', fontsize=12)
         ax[i].set_title(labels[i], fontsize=12)

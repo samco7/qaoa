@@ -54,7 +54,7 @@ def random_graph(n_nodes, weights_set, seed=None):
     return G
 
 
-def create_clusters(points=None, c1=(0, 1), c2=(0, -1), s1=(1, 2), s2=(1, 2), n1=5, n2=5):
+def create_clusters(points=None, c1=(0, 3), c2=(0, -3), s1=(1, 1), s2=(1, 1), n1=5, n2=5):
     """
         If an array of points is passed in, create a dictionary mapping integer nodes to cartesian points.
         Otherwise, set up a random distribution with clusters centered at c1 and c2.
